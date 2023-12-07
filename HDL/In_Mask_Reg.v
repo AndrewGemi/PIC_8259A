@@ -1,7 +1,7 @@
 /***********************************************************
  * File: In_Mask_Reg.v
- * Developer: 
- * Description: 
+ * Developer: Andrew Gamal Todary
+ * Description: this module is responsible for creating interrupt mask reg 
  ************************************************************/
 
 module In_Mask_Reg(  

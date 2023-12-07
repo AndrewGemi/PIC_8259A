@@ -1,7 +1,7 @@
 /***********************************************************
  * File: TB_In_Mask_Reg.v
- * Developer: 
- * Description: 
+ * Developer: Andrew Gamal Todary
+ * Description: this is responsible  for testing Interrupt mask register module 
  ************************************************************/
 
 `include "../HDL/In_Mask_Reg.v"
