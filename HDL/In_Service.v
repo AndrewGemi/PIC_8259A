@@ -5,68 +5,38 @@
  ************************************************************/
 
 module In_Service (
-    input   logic           clock,
-    input   logic           reset,
+    input   [2:0]   priority_rotate,
+    input   [7:0]   interrupt_special_mask,
+    input   [7:0]   interrupt,
+    input           latch_in_service,
+    input   [7:0]   end_of_interrupt,
 
-    // Inputs
-    input   logic   [7:0]   interrupt_request,        // Interrupt Request Lines (IRQ0 to IRQ7)
-    input   logic           end_of_interrupt,    
-
-    // Outputs
-    output  logic   [7:0]   in_service_interrupt       // In-Service Register (ISR)
+    output  reg [7:0]   in_service_register,
+    output  reg [7:0]   highest_level_in_service
 );
-    // In-service register
+    // In service register
+    reg   [7:0]   next_in_service_register;
 
-    logic   [7:0]   next_in_service_register;
-    logic   [7:0]   next_highest_level_in_service;
-
-    always_ff @(posedge clock or negedge reset) begin
-        if (~reset) begin
-            // Reset ISR on reset signal
-            in_service_interrupt <= 8'b00000000;
-        end else begin
-            // Update ISR on positive clock edge
-            in_service_interrupt <= next_in_service_register;
-        end
+    always @* begin
+        next_in_service_register = (in_service_register & ~end_of_interrupt)
+                                   | (latch_in_service ? interrupt : 8'b00000000);
     end
 
-    // Logic to compute the next values for the registers
-    always_ff @(posedge clock or negedge reset) begin
-        if (~reset) begin
-            next_in_service_register <= 8'b00000000;
-            next_highest_level_in_service <= 8'b00000000;
-        end else begin
-            // Update the In-Service Register based on interrupt_request and end_of_interrupt signals
-            {next_in_service_register, next_highest_level_in_service} <= update_isr(in_service_interrupt, interrupt_request, end_of_interrupt);
-        end
+    always @* begin
+        in_service_register <= next_in_service_register;
     end
 
-    // Additional logic for computing the next ISR 
-    function logic [7:0] update_isr(logic [7:0] isr, logic [7:0] irq, logic eoi);
-        logic [7:0] next_isr;
-        logic [7:0] next_highest;
+    // Get Highest level in service
+    reg   [7:0]   next_highest_level_in_service;
 
-        // Find the highest priority interrupt request
-        next_highest = 8'b00000000;
-        for (int i = 0; i < 8; i = i + 1) begin
-            if (irq[i] && ~isr[i]) begin
-                next_highest = i + 1;
-                break;
-            end
-        end
+    always @* begin
+        next_highest_level_in_service = next_in_service_register & ~interrupt_special_mask;
+        next_highest_level_in_service = next_highest_level_in_service >> priority_rotate;
+        // Additional processing as needed
+    end
 
-        // Update the ISR based on EOI and priority
-        next_isr = isr;
-        if (eoi) begin
-            // If EOI is true, clear the highest priority interrupt
-            next_isr[next_highest - 1] = 0;
-        end else if (next_highest != 8'b00000000) begin
-            // If there is a valid highest priority interrupt, set it in the ISR
-            next_isr[next_highest - 1] = 1;
-        end
-
-        // Return the computed values
-        update_isr = next_isr;
-    endfunction
+    always @* begin
+        highest_level_in_service <= next_highest_level_in_service;
+    end
 
 endmodule
