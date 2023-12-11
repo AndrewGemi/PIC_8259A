@@ -24,7 +24,9 @@ module Read_Write_Logic(
     output wire  OCW_3_flag
 );
 
-    assign internal_bus = (~write_bar & ~chip_select_bar) ? data_bus_buffer : 8'bzzzzzzzz;
+    assign internal_bus = (~write_bar & ~chip_select_bar) ? data_bus_buffer : internal_bus;
+
+    assign data_bus_buffer = (~read_bar & ~chip_select_bar) ? internal_bus : data_bus_buffer;
 
     assign ICW_1_flag = ~write_bar & ~A0 & internal_bus[4];
     assign ICW_2_flag = ~write_bar & A0;
