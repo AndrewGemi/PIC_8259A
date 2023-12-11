@@ -14,7 +14,7 @@ module TB_Read_Write_Logic();
   wire ICW_1_flag, ICW_2_flag, ICW_3_flag, ICW_4_flag, OCW_1_flag, OCW_2_flag, OCW_3_flag;
 
 
-  assign data_bus_buffer[7:0] = {data_bus_buffer_drive[7:0]};
+  assign data_bus_buffer = data_bus_buffer_drive;
 
   // Testbench stimulus
   initial begin
@@ -93,13 +93,6 @@ module TB_Read_Write_Logic();
   
   always@ (ICW_1_flag or ICW_2_flag or ICW_3_flag or ICW_4_flag or OCW_1_flag or OCW_2_flag or OCW_3_flag or data_bus_buffer) begin
     // Display output values
-    $display("ICW_1_flag = %b", ICW_1_flag);
-    $display("ICW_2_flag = %b", ICW_2_flag);
-    $display("ICW_3_flag = %b", ICW_3_flag);
-    $display("ICW_4_flag = %b", ICW_4_flag);
-    $display("OCW_1_flag = %b", OCW_1_flag);
-    $display("OCW_2_flag = %b", OCW_2_flag);
-    $display("OCW_3_flag = %b", OCW_3_flag);
-    $display("data_bus_buffer = %b", data_bus_buffer);
+  $display("Time: %0t, ICW_1_flag=%b, ICW_2_flag=%b, ICW_3_flag=%b, ICW_4_flag=%b, OCW_1_flag=%b, OCW_2_flag=%b, OCW_3_flag=%b, data_bus_buffer=%b",$time, ICW_1_flag, ICW_2_flag, ICW_3_flag, ICW_4_flag, OCW_1_flag, OCW_2_flag, OCW_3_flag, data_bus_buffer);
   end
 endmodule
