@@ -7,7 +7,8 @@ Command Word (ICW) registers and Operation Command Word (OCW) registers which st
 
 
 module Read_Write_Logic(
-    inout wire [7:0] data_bus_buffer,
+    input wire [7:0] data_bus_buffer_in,
+    output wire [7:0] data_bus_buffer_out,
     inout wire [7:0] internal_bus,
 
     input wire  chip_select_bar,
@@ -24,9 +25,9 @@ module Read_Write_Logic(
     output wire  OCW_3_flag
 );
 
-    assign internal_bus = (~write_bar & ~chip_select_bar) ? data_bus_buffer : 8'bzzzzzzzz;
+    assign internal_bus = (~write_bar & ~chip_select_bar) ? data_bus_buffer_in : internal_bus;
 
-    assign data_bus_buffer = (~read_bar & ~chip_select_bar) ? internal_bus : 8'bzzzzzzzz;
+    assign data_bus_buffer_out = (~read_bar & ~chip_select_bar) ? internal_bus : 8'bzzzzzzzz;
 
     assign ICW_1_flag = ~write_bar & ~A0 & internal_bus[4];
     assign ICW_2_flag = ~write_bar & A0;
