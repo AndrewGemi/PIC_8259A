@@ -1,0 +1,34 @@
+    //
+    // Initialization command word 1
+    //
+
+    // LTIM
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            level_or_edge_toriggered_config <= 1'b0;
+        else if (write_initial_command_word_1 == 1'b1)
+            level_or_edge_toriggered_config <= internal_data_bus[3];
+        else
+            level_or_edge_toriggered_config <= level_or_edge_toriggered_config;
+    end
+
+    // SNGL
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            single_or_cascade_config <= 1'b0;
+        else if (write_initial_command_word_1 == 1'b1)
+            single_or_cascade_config <= internal_data_bus[1];
+        else
+            single_or_cascade_config <= single_or_cascade_config;
+    end
+
+    // IC4
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            set_icw4_config <= 1'b0;
+        else if (write_initial_command_word_1 == 1'b1)
+            set_icw4_config <= internal_data_bus[0];
+        else
+            set_icw4_config <= set_icw4_config;
+    end
+
