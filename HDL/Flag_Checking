@@ -3,30 +3,24 @@
     //
 
     // LTIM
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            level_or_edge_toriggered_config <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             level_or_edge_toriggered_config <= internal_data_bus[3];
         else
             level_or_edge_toriggered_config <= level_or_edge_toriggered_config;
     end
 
     // SNGL
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            single_or_cascade_config <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             single_or_cascade_config <= internal_data_bus[1];
         else
             single_or_cascade_config <= single_or_cascade_config;
     end
 
     // IC4
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            set_icw4_config <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             set_icw4_config <= internal_data_bus[0];
         else
             set_icw4_config <= set_icw4_config;
@@ -37,10 +31,8 @@
     //
 
     // A15-A8 (MCS-80) or T7-T3 (8086, 8088)
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            interrupt_vector_address[10:3] <= 3'b000;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             interrupt_vector_address[10:3] <= 3'b000;
         else if (write_initial_command_word_2 == 1'b1)
             interrupt_vector_address[10:3] <= internal_data_bus;
@@ -53,10 +45,8 @@
     //
 
     // S7-S0 (MASTER) or ID2-ID0 (SLAVE)
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            cascade_device_config <= 8'b00000000;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             cascade_device_config <= 8'b00000000;
         else if (write_initial_command_word_3 == 1'b1)
             cascade_device_config <= internal_data_bus;
@@ -69,10 +59,8 @@
     //
 
     // SFNM
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            special_fully_nest_config <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             special_fully_nest_config <= 1'b0;
         else if (write_initial_command_word_4 == 1'b1)
             special_fully_nest_config <= internal_data_bus[4];
@@ -81,10 +69,8 @@
     end
 
     // AEOI
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            auto_eoi_config <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             auto_eoi_config <= 1'b0;
         else if (write_initial_command_word_4 == 1'b1)
             auto_eoi_config <= internal_data_bus[1];
@@ -93,10 +79,8 @@
     end
 
     // uPM
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            u8086_or_mcs80_config <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             u8086_or_mcs80_config <= 1'b0;
         else if (write_initial_command_word_4 == 1'b1)
             u8086_or_mcs80_config <= internal_data_bus[0];
