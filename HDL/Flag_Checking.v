@@ -1,89 +1,96 @@
-    //
-    // Initialization command word 1
-    //
+//
+// Variable Declarations
+//
+reg ICW1_WRITE, ICW2_WRITE, ICW3_WRITE, ICW4_WRITE;
+reg [7:0] internal_data_bus;
+reg [7:0] Level_OR_Edge_trigger, Single_OR_Cascade_Config, Set_ICW4_Config, Interrupt_Vector_Address, Cascade_Device_Config, Special_Fully_Nest_Config, Auto_EOI_Config, U8086_OR_MCS80_Config;
 
-    // LTIM
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            level_or_edge_toriggered_config <= internal_data_bus[3];
-        else
-            level_or_edge_toriggered_config <= level_or_edge_toriggered_config;
-    end
+//
+// Initialization command word 1
+//
 
-    // SNGL
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            single_or_cascade_config <= internal_data_bus[1];
-        else
-            single_or_cascade_config <= single_or_cascade_config;
-    end
+// LTIM
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Level_OR_Edge_trigger <= internal_data_bus[3];
+    else
+        Level_OR_Edge_trigger <= Level_OR_Edge_trigger;
+end
 
-    // IC4
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            set_icw4_config <= internal_data_bus[0];
-        else
-            set_icw4_config <= set_icw4_config;
-    end
+// SNGL
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Single_OR_Cascade_Config <= internal_data_bus[1];
+    else
+        Single_OR_Cascade_Config <= Single_OR_Cascade_Config;
+end
 
-    //
-    // Initialization command word 2
-    //
+// IC4
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Set_ICW4_Config <= internal_data_bus[0];
+    else
+        Set_ICW4_Config <= Set_ICW4_Config;
+end
 
-    // A15-A8 (MCS-80) or T7-T3 (8086, 8088)
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            interrupt_vector_address[10:3] <= 3'b000;
-        else if (write_initial_command_word_2 == 1'b1)
-            interrupt_vector_address[10:3] <= internal_data_bus;
-        else
-            interrupt_vector_address[10:3] <= interrupt_vector_address[10:3];
-    end
+//
+// Initialization command word 2
+//
 
-    //
-    // Initialization command word 3
-    //
+// A15-A8 (MCS-80) or T7-T3 (8086, 8088)
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Interrupt_Vector_Address[10:3] <= 3'b000;
+    else if (ICW2_WRITE == 1'b1)
+        Interrupt_Vector_Address[10:3] <= internal_data_bus;
+    else
+        Interrupt_Vector_Address[10:3] <= Interrupt_Vector_Address[10:3];
+end
 
-    // S7-S0 (MASTER) or ID2-ID0 (SLAVE)
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            cascade_device_config <= 8'b00000000;
-        else if (write_initial_command_word_3 == 1'b1)
-            cascade_device_config <= internal_data_bus;
-        else
-            cascade_device_config <= cascade_device_config;
-    end
+//
+// Initialization command word 3
+//
 
-    //
-    // Initialization command word 4
-    //
+// S7-S0 (MASTER) or ID2-ID0 (SLAVE)
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Cascade_Device_Config <= 8'b00000000;
+    else if (ICW3_WRITE == 1'b1)
+        Cascade_Device_Config <= internal_data_bus;
+    else
+        Cascade_Device_Config <= Cascade_Device_Config;
+end
 
-    // SFNM
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            special_fully_nest_config <= 1'b0;
-        else if (write_initial_command_word_4 == 1'b1)
-            special_fully_nest_config <= internal_data_bus[4];
-        else
-            special_fully_nest_config <= special_fully_nest_config;
-    end
+//
+// Initialization command word 4
+//
 
-    // AEOI
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            auto_eoi_config <= 1'b0;
-        else if (write_initial_command_word_4 == 1'b1)
-            auto_eoi_config <= internal_data_bus[1];
-        else
-            auto_eoi_config <= auto_eoi_config;
-    end
+// SFNM
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Special_Fully_Nest_Config <= 1'b0;
+    else if (ICW4_WRITE == 1'b1)
+        Special_Fully_Nest_Config <= internal_data_bus[4];
+    else
+        Special_Fully_Nest_Config <= Special_Fully_Nest_Config;
+end
 
-    // uPM
-    always @* begin
-        if (write_initial_command_word_1 == 1'b1)
-            u8086_or_mcs80_config <= 1'b0;
-        else if (write_initial_command_word_4 == 1'b1)
-            u8086_or_mcs80_config <= internal_data_bus[0];
-        else
-            u8086_or_mcs80_config <= u8086_or_mcs80_config;
-    end
+// AEOI
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        Auto_EOI_Config <= 1'b0;
+    else if (ICW4_WRITE == 1'b1)
+        Auto_EOI_Config <= internal_data_bus[1];
+    else
+        Auto_EOI_Config <= Auto_EOI_Config;
+end
+
+// uPM
+always @* begin
+    if (ICW1_WRITE == 1'b1)
+        U8086_OR_MCS80_Config <= 1'b0;
+    else if (ICW4_WRITE == 1'b1)
+        U8086_OR_MCS80_Config <= internal_data_bus[0];
+    else
+        U8086_OR_MCS80_Config <= U8086_OR_MCS80_Config;
+end
