@@ -135,7 +135,7 @@ end
         else if ((auto_eoi_config == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             end_of_interrupt = acknowledge_interrupt;
         else if (write_operation_control_word_2 == 1'b1) begin
-            casez (internal_data_bus[6:5])
+            case (internal_data_bus[6:5])
                 2'b01:   end_of_interrupt = highest_level_in_service;
                 2'b11:   end_of_interrupt = num2bit(internal_data_bus[2:0]);
                 default: end_of_interrupt = 8'b00000000;
@@ -150,7 +150,7 @@ end
         if (OCW1_WRITE == 1'b1)
             auto_rotate_mode <= 1'b0;
         else if (write_operation_control_word_2 == 1'b1) begin
-            casez (internal_data_bus[7:5])
+            case (internal_data_bus[7:5])
                 3'b000:  auto_rotate_mode <= 1'b0;
                 3'b100:  auto_rotate_mode <= 1'b1;
                 default: auto_rotate_mode <= auto_rotate_mode;
@@ -167,7 +167,7 @@ end
         else if ((auto_rotate_mode == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             priority_rotate <= bit2num(acknowledge_interrupt);
         else if (write_operation_control_word_2 == 1'b1) begin
-            casez (internal_data_bus[7:5])
+            case (internal_data_bus[7:5])
                 3'b101:  priority_rotate <= bit2num(highest_level_in_service);
                 3'b11?:  priority_rotate <= internal_data_bus[2:0];
                 default: priority_rotate <= priority_rotate;
