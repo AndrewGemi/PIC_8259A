@@ -94,3 +94,95 @@ always @* begin
     else
         U8086_OR_MCS80_Config <= U8086_OR_MCS80_Config;
 end
+
+ //
+    // Operation control word 1
+    //
+
+    // IMR
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            interrupt_mask <= 8'b11111111;
+        else if (write_initial_command_word_1 == 1'b1)
+            interrupt_mask <= 8'b11111111;
+        else if ((write_operation_control_word_1_registers == 1'b1) && (special_mask_mode == 1'b0))
+            interrupt_mask <= internal_data_bus;
+        else
+            interrupt_mask <= interrupt_mask;
+    end
+
+    // Special mask
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            interrupt_special_mask <= 8'b00000000;
+        else if (write_initial_command_word_1 == 1'b1)
+            interrupt_special_mask <= 8'b00000000;
+        else if (special_mask_mode == 1'b0)
+            interrupt_special_mask <= 8'b00000000;
+        else if (write_operation_control_word_1_registers  == 1'b1)
+            interrupt_special_mask <= internal_data_bus;
+        else
+            interrupt_special_mask <= interrupt_special_mask;
+    end
+
+    //
+    // Operation control word 2
+    //
+
+    // End of interrupt
+    always_comb begin
+        if (write_initial_command_word_1 == 1'b1)
+            end_of_interrupt = 8'b11111111;
+        else if ((auto_eoi_config == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
+            end_of_interrupt = acknowledge_interrupt;
+        else if (write_operation_control_word_2 == 1'b1) begin
+            casez (internal_data_bus[6:5])
+                2'b01:   end_of_interrupt = highest_level_in_service;
+                2'b11:   end_of_interrupt = num2bit(internal_data_bus[2:0]);
+                default: end_of_interrupt = 8'b00000000;
+            endcase
+        end
+        else
+            end_of_interrupt = 8'b00000000;
+    end
+
+    // Auto rotate mode
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            auto_rotate_mode <= 1'b0;
+        else if (write_initial_command_word_1 == 1'b1)
+            auto_rotate_mode <= 1'b0;
+        else if (write_operation_control_word_2 == 1'b1) begin
+            casez (internal_data_bus[7:5])
+                3'b000:  auto_rotate_mode <= 1'b0;
+                3'b100:  auto_rotate_mode <= 1'b1;
+                default: auto_rotate_mode <= auto_rotate_mode;
+            endcase
+        end
+        else
+            auto_rotate_mode <= auto_rotate_mode;
+    end
+
+    // Rotate
+    always_ff @(negedge clock, posedge reset) begin
+        if (reset)
+            priority_rotate <= 3'b111;
+        else if (write_initial_command_word_1 == 1'b1)
+            priority_rotate <= 3'b111;
+        else if ((auto_rotate_mode == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
+            priority_rotate <= bit2num(acknowledge_interrupt);
+        else if (write_operation_control_word_2 == 1'b1) begin
+            casez (internal_data_bus[7:5])
+                3'b101:  priority_rotate <= bit2num(highest_level_in_service);
+                3'b11?:  priority_rotate <= internal_data_bus[2:0];
+                default: priority_rotate <= priority_rotate;
+            endcase
+        end
+        else
+            priority_rotate <= priority_rotate;
+    end
+
+    //
+    // Operation control word 3
+    //
+
