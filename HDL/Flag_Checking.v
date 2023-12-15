@@ -95,15 +95,13 @@ always @* begin
         U8086_OR_MCS80_Config <= U8086_OR_MCS80_Config;
 end
 
- //
-    // Operation control word 1
-    //
+//
+// Operation control word 1
+//
 
     // IMR
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            interrupt_mask <= 8'b11111111;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             interrupt_mask <= 8'b11111111;
         else if ((write_operation_control_word_1_registers == 1'b1) && (special_mask_mode == 1'b0))
             interrupt_mask <= internal_data_bus;
@@ -112,10 +110,8 @@ end
     end
 
     // Special mask
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            interrupt_special_mask <= 8'b00000000;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             interrupt_special_mask <= 8'b00000000;
         else if (special_mask_mode == 1'b0)
             interrupt_special_mask <= 8'b00000000;
@@ -125,12 +121,12 @@ end
             interrupt_special_mask <= interrupt_special_mask;
     end
 
-    //
-    // Operation control word 2
-    //
+//
+// Operation control word 2
+//
 
     // End of interrupt
-    always_comb begin
+    always @* begin
         if (write_initial_command_word_1 == 1'b1)
             end_of_interrupt = 8'b11111111;
         else if ((auto_eoi_config == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
@@ -147,10 +143,8 @@ end
     end
 
     // Auto rotate mode
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            auto_rotate_mode <= 1'b0;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             auto_rotate_mode <= 1'b0;
         else if (write_operation_control_word_2 == 1'b1) begin
             casez (internal_data_bus[7:5])
@@ -164,10 +158,8 @@ end
     end
 
     // Rotate
-    always_ff @(negedge clock, posedge reset) begin
-        if (reset)
-            priority_rotate <= 3'b111;
-        else if (write_initial_command_word_1 == 1'b1)
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1)
             priority_rotate <= 3'b111;
         else if ((auto_rotate_mode == 1'b1) && (end_of_acknowledge_sequence == 1'b1))
             priority_rotate <= bit2num(acknowledge_interrupt);
@@ -182,7 +174,22 @@ end
             priority_rotate <= priority_rotate;
     end
 
-    //
-    // Operation control word 3
-    //
+//
+// Operation control word 3
+//
 
+    // RR/RIS
+    always @* begin
+        if (write_initial_command_word_1 == 1'b1) begin
+            enable_read_register     <= 1'b1;
+            read_register_isr_or_irr <= 1'b0;
+        end
+        else if (write_operation_control_word_3_registers == 1'b1) begin
+            enable_read_register     <= internal_data_bus[1];
+            read_register_isr_or_irr <= internal_data_bus[0];
+        end
+        else begin
+            enable_read_register     <= enable_read_register;
+            read_register_isr_or_irr <= read_register_isr_or_irr;
+        end
+    end
