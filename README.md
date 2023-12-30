@@ -15,7 +15,7 @@
         <li><a href="#built-with">Built With</a></li>
       </ul>
       <ul>
-        <li><a href="#Simulation/IDE-used">Simulation/IDE used</a></li>
+        <li><a href="#simulationide-used">Simulation/IDE used</a></li>
       </ul>
       <ul>
         <li><a href="#Features-Supported">Features Supported</a></li>
