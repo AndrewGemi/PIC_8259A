@@ -5,18 +5,18 @@
  ************************************************************/
 
 module In_Mask_Reg(  
-  input wire write_ICW_1,
-  input wire write_OCW_1,
-  input wire [7:0] Internal_bus_data,
+  input wire ICW1_WRITE,
+  input wire OCW1_WRITE,
+  inout wire [7:0] internal_bus,
   output reg [7:0] Interrupt_Mask
 );
 
 always @(*)begin
-  if(write_ICW_1 == 1'b1)begin
+  if(ICW1_WRITE == 1'b1)begin
     Interrupt_Mask <= 8'b11111111;
   end
-  else if(write_OCW_1 == 1'b1) begin
-    Interrupt_Mask <= Internal_bus_data; 
+  else if(OCW1_WRITE == 1'b1) begin
+    Interrupt_Mask <= internal_bus; 
   end
   else begin
     Interrupt_Mask <= Interrupt_Mask;

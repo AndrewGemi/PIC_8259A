@@ -1,13 +1,5 @@
-<a name="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
+
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 
@@ -21,6 +13,12 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+      </ul>
+      <ul>
+        <li><a href="#simulationide-used">Simulation/IDE used</a></li>
+      </ul>
+      <ul>
+        <li><a href="#Features-Supported">Features Supported</a></li>
       </ul>
     </li>
     <li>
@@ -47,7 +45,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
+* The Programmable Interrupt Controller (PIC) is a pivotal component in computer systems, orchestrating the flow of interrupt requests between peripherals and the CPU. In the realm of hardware design, this project endeavors to create a Verilog-based implementation of a PIC, closely modeled after the venerable 8259 architecture. The 8259 PIC has long served as a linchpin in computing systems, facilitating efficient communication and interrupt management.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -62,9 +60,27 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Simulation/IDE used
 
-
+* [![ModelSim][ModelSimIcon]][ModelSim-url] 
+* [![VScode][VScodeIcon]][VScode-url]
 <!-- CONTRIBUTING -->
+
+
+### Features Supported
+* 8086 Mode
+* Fully nested mode
+* Automatic End of Interrupt
+* Automatic Rotation mode
+* Cascade mode
+* End of interrupt
+* Specific End of interrupt
+* Read status of PIC
+* Edge/Level Trigger for Requests
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Contributing
 
 ## For Collaborators
@@ -144,4 +160,9 @@ Please fork the repo and create a pull request.
 
 [VerilogIcon]: https://img.shields.io/badge/Verilog-BoldTextHere?style=flat&logo=verilog&color=brightgreen
 [Verilog-url]: https://www.verilog.com/ 
+[ModelSim-url]: https://www.intel.com/content/www/us/en/software-kit/750368/modelsim-intel-fpgas-standard-edition-software-version-18-1.html
+[ModelSimIcon]: https://img.shields.io/badge/Model-Sim-blue
 
+[VScodeIcon]:https://img.shields.io/badge/VScode-blue
+
+[VScode-url]:https://code.visualstudio.com/
