@@ -379,6 +379,142 @@ end
 //*********  handling flags from ICW commands  *************//
 
 
+
+always @(*)begin 
+  if(current_control == IntAck_2)begin
+      if(Single_OR_Cascade == 1'b1)begin
+        if(highest_ISR_bit[0] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b000;
+          else if (highest_ISR_bit[1] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b001;
+          else if (highest_ISR_bit[2] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b010;
+          else if (highest_ISR_bit[3] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b011;
+          else if (highest_ISR_bit[4] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b100;
+          else if (highest_ISR_bit[5] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b101;
+          else if (highest_ISR_bit[6] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b110;
+          else if (highest_ISR_bit[7] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b111;
+          else                         Interrupt_Vector_Address[2:0] = Interrupt_Vector_Address[2:0];
+      end
+      else begin
+        if((MasterOrSlave == 1'b1) & (Slave_enable == 1'b1) )begin
+          if(highest_ISR_bit[0] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b000;
+          else if (highest_ISR_bit[1] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b001;
+          else if (highest_ISR_bit[2] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b010;
+          else if (highest_ISR_bit[3] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b011;
+          else if (highest_ISR_bit[4] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b100;
+          else if (highest_ISR_bit[5] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b101;
+          else if (highest_ISR_bit[6] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b110;
+          else if (highest_ISR_bit[7] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b111;
+          else                         Interrupt_Vector_Address[2:0] = Interrupt_Vector_Address[2:0];
+        end
+        else begin
+          Interrupt_Vector_Address[2:0] <= Interrupt_Vector_Address[2:0];
+        end
+      end
+  end
+  else begin
+    Interrupt_Vector_Address[2:0] <= Interrupt_Vector_Address[2:0];
+    
+  end
+end
+
+
+
+// Cascade block 
+// checking whether this is master or slave 
+
+always @(*)begin
+  if((Single_OR_Cascade == 1'b1) || (SP_bar == 1'b1))begin
+    MasterOrSlave <= 1'b0;          // master
+  end
+  else if(SP_bar == 1'b0)begin
+    MasterOrSlave <= 1'b1;          // MasterOrSlave = 1 // slave
+  end
+  else begin
+    MasterOrSlave <= MasterOrSlave; // SP = 1 --> master
+                                    // SP = 0 --> Slave
+  end
+end
+
+// Slave signals
+
+always @(*)begin
+  if(MasterOrSlave == 1'b0)begin
+    Slave_enable <= 1'b0;
+    end     //== ICW3 Slave
+    else if(Cascade_Device_Config[2:0] == cascade_in)begin
+      Slave_enable <= 1'b1;
+    end
+    else begin
+      Slave_enable <= Slave_enable;
+    end
+  
+end 
+
+// Signals for master 
+
+always @(*)begin
+  if(ICW1_WRITE == 1'b1)begin
+    Slave_Interrupt <= 1'b0;
+  end                //== ICW3 MASTER
+  else if((buffer & Cascade_Device_Config) != 8'b00000000)begin   // buffer is IRR with priority 
+    Slave_Interrupt <= 1'b1;
+  end
+  else begin
+    Slave_Interrupt <= Slave_Interrupt;
+  end
+end
+
+
+// getting id of slave to send it to slave 
+always @(*)begin
+  if(ICW1_WRITE == 1'b1)begin
+    cascade_out <= 3'b000;
+  end
+  else if(Slave_Interrupt == 1'b1)begin
+        if(buffer[0] == 1'b1)  cascade_out = 3'b000;
+        else if (buffer[1] == 1'b1)  cascade_out = 3'b001;
+        else if (buffer[2] == 1'b1)  cascade_out = 3'b010;
+        else if (buffer[3] == 1'b1)  cascade_out = 3'b011;
+        else if (buffer[4] == 1'b1)  cascade_out = 3'b100;
+        else if (buffer[5] == 1'b1)  cascade_out = 3'b101;
+        else if (buffer[6] == 1'b1)  cascade_out = 3'b110;
+        else if (buffer[7] == 1'b1)  cascade_out = 3'b111;
+        else                         cascade_out = cascade_out;
+  end
+  else begin
+    cascade_out <= cascade_out;
+  end
+end
+
+// Flag to send out vector address that depends on whether it is Single or Cascade mode
+
+always @(*) begin
+  if(Single_OR_Cascade == 1'b0)begin
+    if((MasterOrSlave == 1'b1) & (current_control == IntAck_2))begin
+        Control_Output <= 1'b1;
+    end
+    else begin
+      Control_Output <= 1'b0;
+    end   
+  end
+  else begin
+    if(current_control == IntAck_2)begin
+      Control_Output <= 1'b1;
+    end
+    else begin
+      Control_Output <= 1'b0;
+    end
+  end
+end
+
+endmodule
+
+
+
+
+
+
+
+
 endmodule
 
 
