@@ -379,6 +379,207 @@ end
 //*********  handling flags from ICW commands  *************//
 
 
+// Initialization command word 1
+
+
+
+always @(*) begin
+    // LTIM
+    if (ICW1_WRITE == 1'b1)
+        Level_OR_Edge_trigger <= internal_bus[3];
+    else begin
+        Level_OR_Edge_trigger <= Level_OR_Edge_trigger;
+    end
+end
+    // SNGL
+always @(*) begin
+    if (ICW1_WRITE == 1'b1)
+        Single_OR_Cascade <= internal_bus[1];
+    else begin
+        Single_OR_Cascade <= Single_OR_Cascade;
+    end
+end
+    // IC4
+always @(ICW1_WRITE) begin
+    if (ICW1_WRITE == 1'b1)
+        ICW4_config <= internal_bus[0];
+    else
+        ICW4_config <= ICW4_config;
+end
+
+
+// Initialization command word 2
+
+
+// T7-T3 
+always @(*) begin
+    if (ICW1_WRITE == 1'b1)
+        Interrupt_Vector_Address[7:3] <= 3'b000;
+    else if (ICW2_WRITE == 1'b1)
+        Interrupt_Vector_Address[7:3] <= internal_bus[7:3];
+    else
+        Interrupt_Vector_Address[7:3] <= Interrupt_Vector_Address[7:3];
+end
+
+
+// Initialization command word 3
+
+
+// S7-S0 (MASTER) or ID2-ID0 (SLAVE)
+always @(*) begin
+    if (ICW1_WRITE == 1'b1)
+        Cascade_Device_Config <= 8'b00000000;
+    else if (ICW3_WRITE == 1'b1)
+        Cascade_Device_Config <= internal_bus;
+    else
+        Cascade_Device_Config <= Cascade_Device_Config;
+end
+
+
+// Initialization command word 4
+
+
+
+always @(*) begin
+    //Fully nested mode
+    if (ICW1_WRITE == 1'b1)
+        Fully_nested_config <= 1'b0;
+    else if (ICW4_WRITE == 1'b1)
+        Fully_nested_config <= ~internal_bus[4];
+    else begin
+        Fully_nested_config <= Fully_nested_config;
+    end
+end
+
+always @(*)begin
+    // AEOI
+    if (ICW1_WRITE == 1'b1)
+        Auto_EOI_Config <= 1'b0;
+    else if (ICW4_WRITE == 1'b1)
+        Auto_EOI_Config <= internal_bus[1];
+    else begin
+        Auto_EOI_Config <= Auto_EOI_Config;
+    end
+end
+always @(*)begin
+    // uPM
+
+    if (ICW1_WRITE == 1'b1)
+        U8086_OR_MCS80_Config <= 1'b0;
+    else if (ICW4_WRITE == 1'b1)
+        U8086_OR_MCS80_Config <= internal_bus[0];
+    else begin
+        U8086_OR_MCS80_Config <= U8086_OR_MCS80_Config;
+end
+end
+
+
+//*********  handling flags from OCW commands  *************//
+
+//***** OCW 1 *****//
+// handled at IMR module
+
+//***** OCW 2 *****//
+    // EOI flag and specific bit
+always @(*)begin
+        if (ICW1_flag == 1'b1)begin
+                EOI = 8'b11111111;
+                EOI_flag = 1'b0;
+            end    
+        else begin
+            EOI_bit = 8'b00000000;
+            EOI_flag = 1'b0;
+        end
+end
+// AUTOMATIC ROTATE
+always @(*)begin
+  if(ICW1_WRITE == 1'b1)begin
+    auto_rotate <= 1'b0;
+  end
+  else if(OCW2_WRITE == 1'b1) begin
+        case(internal_bus[7:5])
+        3'b000: auto_rotate <= 1'b0;
+        3'b100: auto_rotate <= 1'b1;
+        default: auto_rotate <= auto_rotate;
+        endcase
+  end
+  else begin
+    auto_rotate <= auto_rotate;
+  end
+end
+// rotate
+
+always @(*)begin
+  if(ICW1_WRITE == 1'b1)begin
+    rotate <= 3'b111;
+  end
+  else if((auto_rotate == 1'b1) & (EndOfSequence == 1'b1))begin
+        if(highest_ISR_bit[0] == 1'b1) rotate = 3'b000;
+        else if (highest_ISR_bit[1] == 1'b1) rotate = 3'b001;
+        else if (highest_ISR_bit[2] == 1'b1) rotate = 3'b010;
+        else if (highest_ISR_bit[3] == 1'b1) rotate = 3'b011;
+        else if (highest_ISR_bit[4] == 1'b1) rotate = 3'b100;
+        else if (highest_ISR_bit[5] == 1'b1) rotate = 3'b101;
+        else if (highest_ISR_bit[6] == 1'b1) rotate = 3'b110;
+        else if (highest_ISR_bit[7] == 1'b1) rotate = 3'b111;
+        else                        rotate = 3'b111;
+
+  end
+
+  else if(OCW2_WRITE == 1'b1)begin
+    if(internal_bus[7:5] == 3'b101)begin
+      if(highest_ISR_bit[0] == 1'b1) rotate = 3'b000;
+        else if (highest_ISR_bit[1] == 1'b1) rotate = 3'b001;
+        else if (highest_ISR_bit[2] == 1'b1) rotate = 3'b010;
+        else if (highest_ISR_bit[3] == 1'b1) rotate = 3'b011;
+        else if (highest_ISR_bit[4] == 1'b1) rotate = 3'b100;
+        else if (highest_ISR_bit[5] == 1'b1) rotate = 3'b101;
+        else if (highest_ISR_bit[6] == 1'b1) rotate = 3'b110;
+        else if (highest_ISR_bit[7] == 1'b1) rotate = 3'b111;
+        else                        rotate = 3'b111;
+    end
+  end
+  else begin
+    rotate <= rotate;
+  end
+end
+
+//******** OCW 3 **********//
+//READ IRR OR ISR
+
+always @(*)begin
+  if(ICW1_WRITE == 1'b1)begin
+    RR <= 1'b0;
+    ISR_IRR <= 1'b0;
+  end
+  else if(OCW3_WRITE == 1'b1)begin
+    RR <= internal_bus[1];
+    ISR_IRR <= internal_bus[0];  // 0 --> IRR , 1 --> ISR
+  end
+  else begin
+    RR <= RR;
+    ISR_IRR <= ISR_IRR;
+  end
+end
+
+
+// Sending Interrupt vector address to data bus buffer 
+// always @(*)begin 
+//   if(current_control == IntAck_2)begin
+//         if(highest_ISR_bit[0] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b000;
+//           else if (highest_ISR_bit[1] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b001;
+//           else if (highest_ISR_bit[2] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b010;
+//           else if (highest_ISR_bit[3] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b011;
+//           else if (highest_ISR_bit[4] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b100;
+//           else if (highest_ISR_bit[5] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b101;
+//           else if (highest_ISR_bit[6] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b110;
+//           else if (highest_ISR_bit[7] == 1'b1)  Interrupt_Vector_Address[2:0] = 3'b111;
+//           else                         Interrupt_Vector_Address[2:0] = Interrupt_Vector_Address[2:0];
+//   end
+//   else begin
+//     Interrupt_Vector_Address[2:0] <= Interrupt_Vector_Address [2:0];
+//   end
+// end
 
 always @(*)begin 
   if(current_control == IntAck_2)begin
@@ -507,17 +708,3 @@ always @(*) begin
 end
 
 endmodule
-
-
-
-
-
-
-
-
-endmodule
-
-
-
-
-
