@@ -6,7 +6,6 @@ module PriorityResolver (
     // Inputs from control logic
     input   wire   [2:0]   rotate,
     input   wire   [7:0]   Interrupt_Mask,
-    input   wire   [7:0]   highest_level_in_service,
 
     // Inputs
     input   wire   [7:0]   Int_Req_Reg,
